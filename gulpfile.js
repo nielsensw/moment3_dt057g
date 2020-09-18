@@ -2,6 +2,10 @@
 // För att kunna använda gulp
 const gulp = require('gulp');
 // För att kunna använda plugin
+const babel = require('gulp-babel');
+// För att kunna använda plugin
+const plumber = require('gulp-plumber');
+// För att kunna använda plugin
 const browsersync = require('browser-sync');
 // För att kunna använda plugin
 const concat = require('gulp-concat');
@@ -64,16 +68,10 @@ function sassToCss(){
 
   return gulp.src('./src/sass/**/*.scss')
   .pipe(sass())
-  .pipe(gulp.dest('./src/css/style.css'));
+  .pipe(concat('style.css'))
+  .pipe(gulp.dest('./src/css'));
 };
-// Slår ihop alla css-filer till en enda fil vid namn style.css
-// function cssConcat(){
-//   console.log('Merging CSS files...');
 
-//   return gulp.src('./src/css/**/!(style.css)')
-//     .pipe(concat('style.css'))
-//     .pipe(gulp.dest('./src/css'));
-// };
 //---------
 // Minifierar css till en mindre fil och lägger den i public-mappen
 function cssMinify(){
@@ -102,6 +100,13 @@ function jsMinify(){
   console.log('Minimizing JS files');
 
   return gulp.src('./src/js/main.js')
+  .pipe(plumber())
+  .pipe(babel({ presets: [
+    ['@babel/env', {
+      modules: false
+    }]
+  ]
+  }))
    .pipe(minify())
    .pipe(gulp.dest('./pub/js/'));
 };
@@ -143,7 +148,7 @@ function watchThese(){
 
 
 //------------------------ Exporterar -----------------------
-exports.sassToCss = sassToCss;
+  exports.sassToCss = sassToCss;
   exports.watchThese = watchThese;
   exports.buildSite = buildSite;
-  exports.default = gulp.parallel(buildSite, watchThese);
+  exports.default = gulp.parallel(sassToCss, buildSite, watchThese);
